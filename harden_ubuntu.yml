@@ -1,0 +1,47 @@
+# harden_ubuntu.yml
+- name: Hardening Ubuntu
+  hosts: ubuntu
+  become: true
+
+  tasks:
+    - name: Actualizar todos los paquetes
+      apt:
+        upgrade: dist
+        update_cache: yes
+
+    - name: Instalar herramientas básicas de seguridad
+      apt:
+        name:
+          - ufw
+          - fail2ban
+          - unattended-upgrades
+          - auditd
+          - lynis
+        state: present
+
+    - name: Activar firewall y permitir solo SSH
+      ufw:
+        rule: allow
+        port: 22
+        proto: tcp
+
+    - name: Activar UFW
+      ufw:
+        state: enabled
+
+    - name: Configurar fail2ban
+      copy:
+        src: jail.local
+        dest: /etc/fail2ban/jail.local
+        mode: '0644'
+
+    - name: Desactivar login root por SSH
+      lineinfile:
+        path: /etc/ssh/sshd_config
+        regexp: '^PermitRootLogin'
+        line: 'PermitRootLogin no'
+
+    - name: Reiniciar SSH
+      service:
+        name: ssh
+        state: restarted

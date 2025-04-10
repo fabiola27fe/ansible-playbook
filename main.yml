@@ -1,0 +1,22 @@
+# main.yml
+- name: Detectar sistema operativo y aplicar hardening
+  hosts: all
+  become: true
+  gather_facts: true
+
+  tasks:
+    - name: Incluir hardening para Ubuntu
+      include_tasks: harden_ubuntu.yml
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Incluir hardening para Amazon Linux
+      include_tasks: harden_al23.yml
+      when: ansible_distribution == "Amazon"
+
+    - name: Incluir hardening para RHEL 
+      include_tasks: harden_rhel88.yml
+      when: ansible_distribution == "RedHat"
+
+    - name: Incluir hardening para Windows
+      include_tasks: harden_windows.yml
+      when: ansible_os_family == "Windows"

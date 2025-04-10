@@ -1,0 +1,38 @@
+# harden_rhel.yml
+- name: Hardening RHEL 
+  hosts: rhel
+  become: true
+
+  tasks:
+    - name: Instalar herramientas de seguridad
+      yum:
+        name:
+          - firewalld
+          - audit
+          - fail2ban
+          - lynis
+        state: present
+
+    - name: Activar e iniciar firewalld
+      service:
+        name: firewalld
+        state: started
+        enabled: true
+
+    - name: Abrir solo puerto SSH
+      firewalld:
+        port: 22/tcp
+        permanent: true
+        state: enabled
+        immediate: true
+
+    - name: Configurar fail2ban
+      copy:
+        src: jail.local
+        dest: /etc/fail2ban/jail.local
+        mode: '0644'
+
+    - name: Reiniciar fail2ban
+      service:
+        name: fail2ban
+        state: restarted

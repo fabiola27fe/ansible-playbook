@@ -1,0 +1,28 @@
+# harden_windows.yml
+- name: Hardening Windows Server
+  hosts: windows
+  gather_facts: false
+  vars:
+    ansible_connection: winrm
+
+  tasks:
+    - name: Desactivar SMBv1
+      win_feature:
+        name: FS-SMB1
+        state: absent
+
+    - name: Activar Firewall
+      win_shell: Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
+
+    - name: Desactivar RDP si no se usa
+      win_feature:
+        name: Remote-Desktop-Services
+        state: absent
+
+    - name: Habilitar Windows Update automático
+      win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\Auto Update
+        name: AUOptions
+        data: 4
+        type: dword
+
