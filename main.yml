@@ -12,7 +12,7 @@
     - name: Definir tipo de sistema operativo
       set_fact:
         os_family: >-
-          {% if 'ID=amzn' in os_release_output.stdout %}
+          {% if 'ID=al2023' in os_release_output.stdout %}
             amazon
           {% elif 'ID=ubuntu' in os_release_output.stdout %}
             ubuntu
