@@ -4,10 +4,6 @@
   become: true
   gather_facts: no
 
- - hosts: all
-  gather_facts: no
-  become: true
-
   pre_tasks:
     - name: Detectar distribución
       raw: cat /etc/os-release
@@ -40,7 +36,7 @@
 
     - name: Recolectar facts
       setup:
-      
+
   tasks:
     - name: Mostrar sistema operativo
       debug:
