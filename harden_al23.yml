@@ -1,60 +1,55 @@
 # harden_amazonlinux.yml
-- name: Hardening Amazon Linux
-  hosts: amazonlinux
-  become: true
 
-  tasks:
-    - name: Actualizar todos los paquetes
-      yum:
-        name: "*"
-        state: latest
+- name: Actualizar todos los paquetes
+  yum:
+    name: "*"
+    state: latest
+- name: Instalar herramientas de seguridad
+  yum:
+    name:
+      - firewalld
+      - fail2ban
+      - audit
+      - lynis
+    state: present
 
-    - name: Instalar herramientas de seguridad
-      yum:
-        name:
-          - firewalld
-          - fail2ban
-          - audit
-          - lynis
-        state: present
+- name: Iniciar y habilitar firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: true
 
-    - name: Iniciar y habilitar firewalld
-      service:
-        name: firewalld
-        state: started
-        enabled: true
+- name: Permitir solo puerto SSH (22)
+  firewalld:
+    port: 22/tcp
+    permanent: true
+    state: enabled
+    immediate: true
 
-    - name: Permitir solo puerto SSH (22)
-      firewalld:
-        port: 22/tcp
-        permanent: true
-        state: enabled
-        immediate: true
+- name: Bloquear otros puertos por defecto
+  firewalld:
+    state: disabled
+    immediate: true
 
-    - name: Bloquear otros puertos por defecto
-      firewalld:
-        state: disabled
-        immediate: true
+- name: Desactivar acceso root por SSH
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
 
-    - name: Desactivar acceso root por SSH
-      lineinfile:
-        path: /etc/ssh/sshd_config
-        regexp: '^PermitRootLogin'
-        line: 'PermitRootLogin no'
+- name: Reiniciar SSH
+  service:
+    name: sshd
+    state: restarted
 
-    - name: Reiniciar SSH
-      service:
-        name: sshd
-        state: restarted
+- name: Activar auditoría de sistema
+  service:
+    name: auditd
+    state: started
+    enabled: true
 
-    - name: Activar auditoría de sistema
-      service:
-        name: auditd
-        state: started
-        enabled: true
-
-    - name: Activar fail2ban
-      service:
-        name: fail2ban
-        state: started
-        enabled: true
+- name: Activar fail2ban
+  service:
+    name: fail2ban
+    state: started
+    enabled: true
