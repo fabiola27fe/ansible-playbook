@@ -1,7 +1,8 @@
 # main.yml
-- hosts: all
-  gather_facts: no
+- name: Detectar sistema operativo y aplicar hardening
+  hosts: all
   become: true
+  gather_facts: no
 
   pre_tasks:
     - name: Detectar distribución
@@ -10,31 +11,14 @@
 
     - name: Definir tipo de sistema operativo
       set_fact:
-        os_family: >-
+        os_family: |
           {% if 'ID="amzn"' in os_release_output.stdout %}
             amazon
           {% elif 'ID="ubuntu"' in os_release_output.stdout %}
             ubuntu
           {% else %}
-            unknown
+           unknown
           {% endif %}
-
-    - name: Instalar Python en Amazon Linux
-      raw: dnf install -y python3
-      when: os_family | trim == 'amazon'
-
-    - name: Instalar Python en Ubuntu
-      raw: |
-        apt-get update -y
-        apt-get install -y python3
-      when: os_family | trim == 'ubuntu'
-
-    - name: Definir intérprete de Python
-      set_fact:
-        ansible_python_interpreter: /usr/bin/python3
-
-    - name: Recolectar facts
-      setup:
 
     - name: Instalar Python en Amazon Linux
       raw: dnf install -y python3
