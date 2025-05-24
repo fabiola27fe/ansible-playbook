@@ -2,9 +2,27 @@
 - name: Detectar sistema operativo y aplicar hardening
   hosts: all
   become: true
-  gather_facts: true
+  gather_facts: no
+
+  pre_tasks:
+    - name: Instalar Python3 en Ubuntu (si no existe)
+      raw: |
+        if ! command -v python3 > /dev/null 2>&1; then
+          apt-get update -y && apt-get install -y python3
+        fi
+
+    - name: Forzar intérprete de Python
+      set_fact:
+        ansible_python_interpreter: /usr/bin/python3
+
+    - name: Recolectar facts una vez que Python esté instalado
+      setup:
 
   tasks:
+    - name: Mostrar sistema operativo
+      debug:
+        var: ansible_distribution
+
     - name: Incluir hardening para Ubuntu
       include_tasks: harden_ubuntu.yml
       when: ansible_distribution == "Ubuntu"
