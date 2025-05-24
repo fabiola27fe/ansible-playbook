@@ -4,20 +4,43 @@
   become: true
   gather_facts: no
 
-  pre_tasks:
-    - name: Instalar Python3 en Ubuntu (si no existe)
-      raw: |
-        if ! command -v python3 > /dev/null 2>&1; then
-          apt-get update -y && apt-get install -y python3
-        fi
+ - hosts: all
+  gather_facts: no
+  become: true
 
-    - name: Forzar intérprete de Python
+  pre_tasks:
+    - name: Detectar distribución
+      raw: cat /etc/os-release
+      register: os_release_output
+
+    - name: Definir tipo de sistema operativo
+      set_fact:
+        os_family: >-
+          {% if 'ID=amzn' in os_release_output.stdout %}
+            amazon
+          {% elif 'ID=ubuntu' in os_release_output.stdout %}
+            ubuntu
+          {% else %}
+            unknown
+          {% endif %}
+
+    - name: Instalar Python en Amazon Linux
+      raw: dnf install -y python3
+      when: os_family == 'amazon'
+
+    - name: Instalar Python en Ubuntu
+      raw: |
+        apt-get update -y
+        apt-get install -y python3
+      when: os_family == 'ubuntu'
+
+    - name: Definir intérprete de Python
       set_fact:
         ansible_python_interpreter: /usr/bin/python3
 
-    - name: Recolectar facts una vez que Python esté instalado
+    - name: Recolectar facts
       setup:
-
+      
   tasks:
     - name: Mostrar sistema operativo
       debug:
