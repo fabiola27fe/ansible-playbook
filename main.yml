@@ -19,6 +19,9 @@
           {% else %}
            unknown
           {% endif %}
+    - name: Limpiar variable os_family
+      set_fact:
+        os_family: "{{ raw_os_family | regex_replace('\\s+', '') }}"
 
     - name: Instalar Python en Amazon Linux
       raw: dnf install -y python3
